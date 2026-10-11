@@ -1,0 +1,29 @@
+# 用 Docker 部署 NapCatQQ（QQ 协议端）。
+# 说明：镜像名/版本/挂载路径可能随项目更新变化，若有出入请以 NapCat 官方 README 为准。
+#
+# 启动： docker compose -f docker-compose.napcat.yml up -d
+# 查看日志/二维码： docker logs -f napcat
+# 打开 WebUI： http://<服务器IP>:6099/webui  （默认端口 6099）
+#
+# 国内拉不动 Docker Hub 时，把 image 换成镜像加速地址（二选一），例如：
+#   image: m.daocloud.io/docker.io/mlikiowa/napcat-docker:latest
+# 或先手动拉镜像再打回官方 tag：
+#   docker pull m.daocloud.io/docker.io/mlikiowa/napcat-docker:latest
+#   docker tag  m.daocloud.io/docker.io/mlikiowa/napcat-docker:latest mlikiowa/napcat-docker:latest
+services:
+  napcat:
+    image: mlikiowa/napcat-docker:latest
+    container_name: napcat
+    environment:
+      - NAPCAT_UID=0
+      - NAPCAT_GID=0
+    ports:
+      # 只映射我们真正需要的两个端口。
+      # NapCat 默认还用 3000 做 OneBot HTTP，本机器人用不到，
+      # 不映射可以避免和服务器上已占用 3000 的容器冲突。
+      - "3001:3001"   # OneBot 正向 WebSocket <- 机器人程序连这里
+      - "6099:6099"   # NapCat WebUI（扫码登录小号）
+    volumes:
+      - ./napcat/config:/app/napcat/config
+      - ./napcat/QQ:/app/.config/QQ
+    restart: unless-stopped

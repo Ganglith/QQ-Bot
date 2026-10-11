@@ -1,0 +1,49 @@
+# ================= OneBot 连接（对接 NapCat）=================
+onebot:
+  # NapCat 的【正向 WebSocket】地址。
+  # 本程序作为客户端去连它。默认端口一般是 3001，请在 NapCat WebUI 的
+  # 「网络配置 -> OneBot11」里确认。
+  ws_url: "ws://127.0.0.1:3001"
+  # 与上面同理，对应 NapCat 里设置的 access_token；没设就留空。
+  access_token: ""
+
+# ================= 大模型（DeepSeek，兼容 OpenAI 格式）=================
+llm:
+  base_url: "https://api.deepseek.com"
+  model: "deepseek-chat"      # 想更强推理可换 deepseek-reasoner（会更慢）
+  temperature: 1.1            # 越高越活泼、越像人；建议 0.9 ~ 1.3
+  max_tokens: 800
+  # api_key 建议放在 .env 的 DEEPSEEK_API_KEY 里，这里留空即可
+  api_key: ""
+
+# ================= 行为控制 =================
+behavior:
+  private_reply: true         # 私聊是否自动回复
+  group_need_at: true         # 群里是否必须 @ 它才回复（强烈建议 true，防刷屏）
+  wake_words:                 # 群聊里不做 @ 也能唤醒的词（可留空）
+    - "小满"
+  whitelist: []               # 只回复这些 QQ 号；留空 = 所有人都回复
+  max_split: 3                # 长回复最多拆成几条发（像真人连打）
+  min_delay: 0.5              # 每条消息最小延迟（秒）
+  delay_per_char: 0.03        # 每个字额外的“打字”延迟（秒）
+
+  # ---- 群聊 ----
+  bot_name: "机器人"          # 机器人在群里的称呼（仅用于日志/上下文标注）
+  group_context_size: 30      # 记住群里最近多少条消息当上下文（看得见大家在聊什么）
+  group_context_ttl: 1800     # 群上下文保留时间（秒），过期清空
+  group_max_split: 2          # 群里回复最多拆几条（群里更克制，别刷屏）
+  log_all_events: false       # 调试用：true 时打印收到的每一条消息事件（排查「收不到消息」）
+
+# ================= 上下文记忆 =================
+memory:
+  max_turns: 12               # 每个用户保留最近几轮对话
+  ttl_seconds: 1800           # 超过这个时间没说话就清空记忆（秒）
+
+# ================= 群聊「爬楼总结」 =================
+summarize:
+  enabled: true
+  # 群里 @机器人 并说到这些词，就触发总结
+  keywords: ["总结一下", "总结", "爬楼", "复盘", "简报"]
+  count: 200                  # 从 NapCat 拉取最近多少条群消息
+  max_chars: 6000             # 喂给模型的最大字符数（超出则只保留较新的）
+  cooldown: 30                # 同一个群多少秒内只能总结一次（防刷）
